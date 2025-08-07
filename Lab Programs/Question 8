@@ -1,0 +1,366 @@
+1) Binary search Tree
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int data;
+    struct Node *left, *right;
+};
+
+struct Node* newNode(int val) {
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+    node->data = val;
+    node->left = node->right = NULL;
+    return node;
+}
+
+struct Node* insert(struct Node* root, int val) {
+    if (root == NULL) return newNode(val);
+    if (val < root->data)
+        root->left = insert(root->left, val);
+    else if (val > root->data)
+        root->right = insert(root->right, val);
+    return root;
+}
+
+void inorder(struct Node* root) {
+    if (root != NULL) {
+        inorder(root->left);
+        printf("%d ", root->data);
+        inorder(root->right);
+    }
+}
+
+int main() {
+    struct Node* root = NULL;
+    int n, val, i;
+
+    printf("Enter number of nodes: ");
+    scanf("%d", &n);
+
+    for(i = 0; i < n; i++) {
+        printf("Enter value: ");
+        scanf("%d", &val);
+        root = insert(root, val);
+    }
+
+    printf("Inorder traversal of BST: ");
+    inorder(root);
+    printf("\n");
+
+    return 0;
+}
+
+
+2) B Tree
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 5  // max keys in node = 2*t - 1 (t=3)
+#define MIN 2  // min keys in node = t - 1
+
+struct BTreeNode {
+    int keys[MAX];
+    int count;
+    struct BTreeNode* children[MAX + 1];
+    int leaf;
+};
+
+struct BTreeNode* createNode(int leaf) {
+    struct BTreeNode* node = (struct BTreeNode*)malloc(sizeof(struct BTreeNode));
+    node->leaf = leaf;
+    node->count = 0;
+    for (int i=0; i<MAX+1; i++) node->children[i] = NULL;
+    return node;
+}
+
+void traverse(struct BTreeNode* root) {
+    if (root != NULL) {
+        int i;
+        for (i = 0; i < root->count; i++) {
+            if (!root->leaf)
+                traverse(root->children[i]);
+            printf("%d ", root->keys[i]);
+        }
+        if (!root->leaf)
+            traverse(root->children[i]);
+    }
+}
+
+// Function prototypes for insertion - complex, so simplified example only
+// Full B-tree insertion is beyond simple snippet
+
+int main() {
+    printf("B-Tree implementation is complex for short code.\n");
+    printf("Consider studying B-Tree insertion and deletion separately.\n");
+    return 0;
+}
+
+
+3) B+ Tree
+
+4) AVL Tree
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int data;
+    struct Node *left, *right;
+    int height;
+};
+
+int height(struct Node* N) {
+    if (N == NULL) return 0;
+    return N->height;
+}
+
+int max(int a, int b) {
+    return (a > b) ? a : b;
+}
+
+struct Node* newNode(int val) {
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+    node->data = val;
+    node->left = node->right = NULL;
+    node->height = 1;
+    return node;
+}
+
+struct Node* rightRotate(struct Node* y) {
+    struct Node* x = y->left;
+    struct Node* T2 = x->right;
+
+    x->right = y;
+    y->left = T2;
+
+    y->height = max(height(y->left), height(y->right)) + 1;
+    x->height = max(height(x->left), height(x->right)) + 1;
+
+    return x;
+}
+
+struct Node* leftRotate(struct Node* x) {
+    struct Node* y = x->right;
+    struct Node* T2 = y->left;
+
+    y->left = x;
+    x->right = T2;
+
+    x->height = max(height(x->left), height(x->right)) + 1;
+    y->height = max(height(y->left), height(y->right)) + 1;
+
+    return y;
+}
+
+int getBalance(struct Node* N) {
+    if (N == NULL) return 0;
+    return height(N->left) - height(N->right);
+}
+
+struct Node* insert(struct Node* node, int val) {
+    if (node == NULL)
+        return newNode(val);
+
+    if (val < node->data)
+        node->left = insert(node->left, val);
+    else if (val > node->data)
+        node->right = insert(node->right, val);
+    else
+        return node;
+
+    node->height = 1 + max(height(node->left), height(node->right));
+
+    int balance = getBalance(node);
+
+    // Left Left Case
+    if (balance > 1 && val < node->left->data)
+        return rightRotate(node);
+
+    // Right Right Case
+    if (balance < -1 && val > node->right->data)
+        return leftRotate(node);
+
+    // Left Right Case
+    if (balance > 1 && val > node->left->data) {
+        node->left = leftRotate(node->left);
+        return rightRotate(node);
+    }
+
+    // Right Left Case
+    if (balance < -1 && val < node->right->data) {
+        node->right = rightRotate(node->right);
+        return leftRotate(node);
+    }
+
+    return node;
+}
+
+void inorder(struct Node* root) {
+    if (root != NULL) {
+        inorder(root->left);
+        printf("%d ", root->data);
+        inorder(root->right);
+    }
+}
+
+int main() {
+    struct Node* root = NULL;
+    int n, val, i;
+
+    printf("Enter number of nodes: ");
+    scanf("%d", &n);
+
+    for(i=0; i<n; i++) {
+        printf("Enter value: ");
+        scanf("%d", &val);
+        root = insert(root, val);
+    }
+
+    printf("Inorder traversal of AVL tree: ");
+    inorder(root);
+    printf("\n");
+
+    return 0;
+}
+
+
+5) Red Black Tree
+
+#include <stdio.h>
+#include <stdlib.h>
+
+enum Color { RED, BLACK };
+
+struct Node {
+    int data;
+    int color;
+    struct Node *left, *right, *parent;
+};
+
+struct Node* root = NULL;
+struct Node* TNULL;
+
+void initializeTNULL() {
+    TNULL = (struct Node*)malloc(sizeof(struct Node));
+    TNULL->color = BLACK;
+    TNULL->left = NULL;
+    TNULL->right = NULL;
+    TNULL->parent = NULL;
+}
+
+void preorderHelper(struct Node* node) {
+    if (node != TNULL) {
+        printf("%d ", node->data);
+        preorderHelper(node->left);
+        preorderHelper(node->right);
+    }
+}
+
+struct Node* createNode(int data) {
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+    node->data = data;
+    node->color = RED;
+    node->left = TNULL;
+    node->right = TNULL;
+    node->parent = NULL;
+    return node;
+}
+
+// Left rotate
+void leftRotate(struct Node* x) {
+    struct Node* y = x->right;
+    x->right = y->left;
+    if (y->left != TNULL) y->left->parent = x;
+
+    y->parent = x->parent;
+    if (x->parent == NULL) root = y;
+    else if (x == x->parent->left) x->parent->left = y;
+    else x->parent->right = y;
+
+    y->left = x;
+    x->parent = y;
+}
+
+// Right rotate
+void rightRotate(struct Node* x) {
+    struct Node* y = x->left;
+    x->left = y->right;
+    if (y->right != TNULL) y->right->parent = x;
+
+    y->parent = x->parent;
+    if (x->parent == NULL) root = y;
+    else if (x == x->parent->right) x->parent->right = y;
+    else x->parent->left = y;
+
+    y->right = x;
+    x->parent = y;
+}
+
+// Fix the red-black tree after insertion
+void fixInsert(struct Node* k) {
+    struct Node* u;
+    while (k->parent != NULL && k->parent->color == RED) {
+        if (k->parent == k->parent->parent->right) {
+            u = k->parent->parent->left;
+            if (u->color == RED) {
+                u->color = BLACK;
+                k->parent->color = BLACK;
+                k->parent->parent->color = RED;
+                k = k->parent->parent;
+            } else {
+                if (k == k->parent->left) {
+                    k = k->parent;
+                    rightRotate(k);
+                }
+                k->parent->color = BLACK;
+                k->parent->parent->color = RED;
+                leftRotate(k->parent->parent);
+            }
+        } else {
+            u = k->parent->parent->right;
+
+            if (u->color == RED) {
+                u->color = BLACK;
+                k->parent->color = BLACK;
+                k->parent->parent->color = RED;
+                k = k->parent->parent;	
+            } else {
+                if (k == k->parent->right) {
+                    k = k->parent;
+                    leftRotate(k);
+                }
+                k->parent->color = BLACK;
+                k->parent->parent->color = RED;
+                rightRotate(k->parent->parent);
+            }
+        }
+        if (k == root) break;
+    }
+    root->color = BLACK;
+}
+
+void insert(int key) {
+    struct Node* node = createNode(key);
+    struct Node* y = NULL;
+    struct Node* x = root;
+
+    while (x != TNULL) {
+        y = x;
+        if (node->data < x->data) x = x->left;
+        else x = x->right;
+    }
+
+    node->parent = y;
+    if (y == NULL) root = node;
+    else if (node->data < y->data) y->left = node;
+    else y->right = node;
+
+    if (node->parent == NULL) {
+        node->color = BLACK;
+        return;
+    }
+
+    if (node->
